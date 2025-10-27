@@ -1,0 +1,5 @@
+{
+  "name": "Calculadora de 1RM",
+  "description": "Una aplicación para calcular tu repetición máxima (1RM) en levantamiento de pesas, realizar un seguimiento de tu historial y ver las proyecciones de peso por porcentaje.",
+  "requestFramePermissions": []
+}
