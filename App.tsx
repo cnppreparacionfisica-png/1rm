@@ -8,13 +8,22 @@ import { calculate1RM } from './utils/formulas';
 
 const App: React.FC = () => {
   const [calculations, setCalculations] = useState<Calculation[]>([]);
-  const [lastCalculation, setLastCalculation] = useState<Calculation | null>(null);
+  const [activeCalculation, setActiveCalculation] = useState<Calculation | null>(null);
 
   useEffect(() => {
     try {
       const storedCalculations = localStorage.getItem('rmCalculations');
       if (storedCalculations) {
-        setCalculations(JSON.parse(storedCalculations));
+        const parsedCalculations = JSON.parse(storedCalculations) as Calculation[];
+        setCalculations(parsedCalculations);
+
+        const storedActiveId = localStorage.getItem('rmActiveCalculationId');
+        if (storedActiveId) {
+          const activeCalc = parsedCalculations.find(c => c.id === storedActiveId);
+          if (activeCalc) {
+            setActiveCalculation(activeCalc);
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to load calculations from local storage", error);
@@ -24,10 +33,15 @@ const App: React.FC = () => {
   useEffect(() => {
     try {
       localStorage.setItem('rmCalculations', JSON.stringify(calculations));
+      if (activeCalculation) {
+        localStorage.setItem('rmActiveCalculationId', activeCalculation.id);
+      } else {
+        localStorage.removeItem('rmActiveCalculationId');
+      }
     } catch (error) {
       console.error("Failed to save calculations to local storage", error);
     }
-  }, [calculations]);
+  }, [calculations, activeCalculation]);
 
   const handleCalculate = useCallback((data: CalculationInput) => {
     const oneRepMax = calculate1RM(data.weight, data.reps);
@@ -41,15 +55,19 @@ const App: React.FC = () => {
     };
     
     setCalculations(prev => [newCalculation, ...prev]);
-    setLastCalculation(newCalculation);
+    setActiveCalculation(newCalculation);
   }, []);
 
   const handleDelete = useCallback((id: string) => {
     setCalculations(prev => prev.filter(calc => calc.id !== id));
-    if (lastCalculation?.id === id) {
-      setLastCalculation(null);
+    if (activeCalculation?.id === id) {
+      setActiveCalculation(null);
     }
-  }, [lastCalculation]);
+  }, [activeCalculation]);
+
+  const handleSelect = useCallback((calculation: Calculation) => {
+    setActiveCalculation(calculation);
+  }, []);
 
   return (
     <div className="bg-gray-900 text-gray-100 min-h-screen font-sans">
@@ -75,8 +93,13 @@ const App: React.FC = () => {
           </div>
 
           <div className="lg:col-span-8 space-y-8">
-            {lastCalculation && <ResultsDisplay calculation={lastCalculation} />}
-            <HistoryList calculations={calculations} onDelete={handleDelete} />
+            <ResultsDisplay calculation={activeCalculation} />
+            <HistoryList 
+              calculations={calculations} 
+              onDelete={handleDelete}
+              onSelect={handleSelect}
+              activeCalculation={activeCalculation}
+            />
           </div>
         </div>
       </main>

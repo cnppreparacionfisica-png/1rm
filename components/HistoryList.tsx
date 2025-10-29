@@ -1,4 +1,3 @@
-
 import React from 'react';
 import type { Calculation } from '../types';
 import TrashIcon from './icons/TrashIcon';
@@ -6,9 +5,11 @@ import TrashIcon from './icons/TrashIcon';
 interface HistoryListProps {
   calculations: Calculation[];
   onDelete: (id: string) => void;
+  onSelect: (calculation: Calculation) => void;
+  activeCalculation: Calculation | null;
 }
 
-const HistoryList: React.FC<HistoryListProps> = ({ calculations, onDelete }) => {
+const HistoryList: React.FC<HistoryListProps> = ({ calculations, onDelete, onSelect, activeCalculation }) => {
   if (calculations.length === 0) {
     return (
       <div className="bg-gray-800 rounded-lg p-6 text-center border border-gray-700 shadow-2xl">
@@ -24,7 +25,17 @@ const HistoryList: React.FC<HistoryListProps> = ({ calculations, onDelete }) => 
       <div className="max-h-96 overflow-y-auto pr-2">
         <ul className="space-y-3">
           {calculations.map(calc => (
-            <li key={calc.id} className="bg-gray-700/50 p-4 rounded-lg flex items-center justify-between hover:bg-gray-700 transition-colors duration-200">
+            <li 
+              key={calc.id}
+              onClick={() => onSelect(calc)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(calc); }}
+              className={`p-4 rounded-lg flex items-center justify-between hover:bg-gray-700 transition-all duration-200 cursor-pointer ${
+                activeCalculation?.id === calc.id ? 'bg-gray-700 ring-2 ring-blue-500' : 'bg-gray-700/50'
+              }`}
+              role="button"
+              tabIndex={0}
+              aria-pressed={activeCalculation?.id === calc.id}
+            >
               <div>
                 <p className="font-bold text-lg text-blue-300">{calc.exercise}</p>
                 <p className="text-sm text-gray-300">
@@ -36,7 +47,10 @@ const HistoryList: React.FC<HistoryListProps> = ({ calculations, onDelete }) => 
                 </p>
               </div>
               <button
-                onClick={() => onDelete(calc.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(calc.id);
+                }}
                 className="p-2 rounded-full text-gray-400 hover:bg-red-500/20 hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800 transition-colors"
                 aria-label={`Eliminar cálculo de ${calc.exercise}`}
               >

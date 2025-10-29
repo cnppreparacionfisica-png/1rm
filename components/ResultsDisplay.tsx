@@ -1,10 +1,9 @@
-
 import React, { useMemo } from 'react';
 import type { Calculation, PercentageResult } from '../types';
 import { estimateRepsForPercentage } from '../utils/formulas';
 
 interface ResultsDisplayProps {
-  calculation: Calculation;
+  calculation: Calculation | null;
 }
 
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ calculation }) => {
@@ -22,7 +21,18 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ calculation }) => {
     return data;
   }, [calculation]);
   
-  if (!calculation) return null;
+  if (!calculation) {
+    return (
+      <div className="bg-gray-800 rounded-lg p-6 shadow-2xl border border-gray-700 h-full flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2 text-white">Resultados</h2>
+          <p className="text-gray-400">
+            Selecciona un cálculo del historial o realiza uno nuevo para ver los detalles aquí.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-800 rounded-lg p-6 shadow-2xl border border-gray-700">
